@@ -1,16 +1,15 @@
 package libcontext
 
-import "context"
+import (
+	"context"
+
+	"go.uber.org/fx"
+)
 
 var Context context.Context
 
-func init() {
-	Context = context.Background()
-}
-
-func SetContext(ctx context.Context) {
-	Context = ctx
-}
-func GetContext() context.Context {
-	return Context
+func New(ctx context.Context) fx.Option {
+	return fx.Options(
+		fx.Provide(WithContext(ctx)),
+	)
 }

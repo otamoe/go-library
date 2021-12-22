@@ -12,7 +12,7 @@ var GCInterval = 15 * time.Minute
 var GCSleep = 10 * time.Second
 
 func GC(ctx context.Context, db *badger.DB) {
-	gcTimeout := time.NewTimer(GCInterval)
+	gcTimeout := time.NewTicker(GCInterval)
 	defer gcTimeout.Stop()
 	var err error
 	for {

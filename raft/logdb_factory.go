@@ -9,8 +9,9 @@ import (
 
 type (
 	LogDBFactory struct {
-		db     *badger.DB
-		logger *zap.Logger
+		db            *badger.DB
+		logger        *zap.Logger
+		clusterLogger *zap.Logger
 	}
 )
 
@@ -22,6 +23,13 @@ func (logDBFactory *LogDBFactory) Create(nhc dconfig.NodeHostConfig, logDBCallba
 	return
 }
 
-func NewLogDBFactory(db *badger.DB, logger *zap.Logger) *LogDBFactory {
-	return &LogDBFactory{db: db, logger: logger}
+func NewLogDBFactory(db *badger.DB, logger *zap.Logger) (out OutNodeHostConfig) {
+	out.Config = func(nhc dconfig.NodeHostConfig) (dconfig.NodeHostConfig, error) {
+		nhc.Expert.LogDBFactory = &LogDBFactory{
+			db:     db,
+			logger: logger.Named("raft").Named("logdb"),
+		}
+		return nhc, nil
+	}
+	return
 }

@@ -1,51 +1,23 @@
 package liblogger
 
 import (
-	"context"
-	"errors"
 	"strings"
 
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
 
 type (
-	FXLogger struct {
+	fxLogger struct {
 		*zap.Logger
 	}
 )
 
-func NewFX(logger *zap.Logger, stop bool) (fxOption fx.Option) {
-	if logger == nil {
-		logger = GetLogger()
-	}
-	if logger == nil {
-		return fx.Error(errors.New("logger is nil"))
-	}
-	return fx.Provide(func(lc fx.Lifecycle) (out *zap.Logger) {
-		lc.Append(fx.Hook{
-			OnStop: func(c context.Context) error {
-				if stop {
-					return logger.Sync()
-				}
-				return nil
-			},
-		})
-		return out
-	})
+func FxLogger(logger *zap.Logger) fxevent.Logger {
+	return &fxLogger{logger}
 }
 
-func WithFXLogger(logger *zap.Logger) fx.Option {
-	if logger == nil {
-		logger = GetLogger().Named("fx")
-	}
-	return fx.WithLogger(func() fxevent.Logger {
-		return &FXLogger{logger}
-	})
-}
-
-func (l *FXLogger) LogEvent(event fxevent.Event) {
+func (l *fxLogger) LogEvent(event fxevent.Event) {
 	switch e := event.(type) {
 	case *fxevent.OnStartExecuting:
 		l.Info("HOOK OnStart executing", zap.String("FunctionName", e.FunctionName), zap.String("CallerName", e.CallerName))

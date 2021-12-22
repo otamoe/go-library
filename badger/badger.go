@@ -1,56 +1,38 @@
 package libbadger
 
 import (
-	"fmt"
 	"os"
 	"path"
 
 	"github.com/dgraph-io/badger/v3"
-	libconfig "github.com/otamoe/go-library/config"
-	liblogger "github.com/otamoe/go-library/logger"
-	"github.com/shirou/gopsutil/v3/mem"
+	libviper "github.com/otamoe/go-library/viper"
+	"go.uber.org/fx"
 )
 
-func init() {
+func New(options badger.Options) fx.Option {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	libconfig.SetDefault("badger.indexDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "index"), "Badger index dir")
-	libconfig.SetDefault("badger.valueDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "value"), "Badger index dir")
-}
 
-var DB *badger.DB
+	return fx.Options(
+		fx.Provide(libviper.WithSetDefault("badger.indexDir", path.Join(homeDir, ".{name}/badger/index"), "badger index dir")),
+		fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, ".{name}/badger/index"), "badger value dir")),
 
-func GetDB() *badger.DB {
-	return DB
-}
+		fx.Provide(ViperValueDir),
+		fx.Provide(ViperIndexDir),
 
-func SetDB(v *badger.DB) {
-	DB = v
-}
+		fx.Provide(NewOptions),
+		fx.Provide(ViperLoggerLevel),
 
-func Close() error {
-	return DB.Close()
-}
+		fx.Provide(Logger),
 
-func DefaultOptions() badger.Options {
-	memorySize := GetMemorySize()
-	return badger.DefaultOptions(libconfig.GetString("badger.indexDir")).
-		WithValueDir(libconfig.GetString("badger.valueDir")).
-		WithBaseTableSize(1024 * 1024 * 8).
-		WithMemTableSize(int64(memorySize / 32)).
-		WithValueThreshold(1024 * 1).
-		WithBlockCacheSize(int64(memorySize / 32)).
-		WithIndexCacheSize(int64(memorySize / 32)).
-		WithLogger(NewLogger(liblogger.GetLogger()))
-}
+		fx.Provide(NewBadger),
 
-func GetMemorySize() uint64 {
-	// 读取内存
-	memStat, err := mem.VirtualMemory()
-	if err != nil {
-		panic(fmt.Errorf("get memory size", err))
-	}
-	return memStat.Total
+		// fx.Provide(libviper.WithSetDefault("badger.indexDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "index"), "HTTP certificates")),
+		// fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "index"), "HTTP certificates")),
+		// fx.Provide(ViperAddr),
+		// fx.Provide(ViperCertificates),
+		// fx.Provide(NewServer),
+	)
 }

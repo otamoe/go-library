@@ -30,14 +30,11 @@ func (loggerFactory *LoggerFactory) Create(pkgName string) dlogger.ILogger {
 	return loggerFactory.pkgs[pkgName]
 }
 
-func NewLoggerFactory(logger *zap.Logger) dlogger.Factory {
-	loggerFactory := &LoggerFactory{
-		logger: logger,
+func NewLoggerFactory(logger *zap.Logger) (loggerFactory *LoggerFactory) {
+	loggerFactory = &LoggerFactory{
+		logger: logger.Named("raft"),
 		pkgs:   make(map[string]*Logger),
 	}
-	return loggerFactory.Create
-}
-
-func SetLoggerFactory(logger *zap.Logger) {
-	dlogger.SetLoggerFactory(NewLoggerFactory(logger))
+	dlogger.SetLoggerFactory(loggerFactory.Create)
+	return loggerFactory
 }

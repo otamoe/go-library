@@ -22,3 +22,10 @@ func NewLogger(logger *zap.Logger) badger.Logger {
 		SugaredLogger: logger.Sugar(),
 	}
 }
+
+func Logger(logger *zap.Logger) (out OutOption) {
+	out.Option = func(o badger.Options) (badger.Options, error) {
+		return o.WithLogger(NewLogger(logger.Named("badger"))), nil
+	}
+	return
+}
