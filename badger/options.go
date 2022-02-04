@@ -36,6 +36,16 @@ func NewOptions(inOptions InOptions) (options badger.Options, err error) {
 }
 
 func NewBadger(lc fx.Lifecycle, options badger.Options) (db *badger.DB, err error) {
+	if options.Dir != "" {
+		if err = os.MkdirAll(options.Dir, 0755); err != nil {
+			return
+		}
+	}
+	if options.ValueDir != "" {
+		if err = os.MkdirAll(options.ValueDir, 0755); err != nil {
+			return
+		}
+	}
 	if db, err = badger.Open(options); err != nil {
 		return
 	}

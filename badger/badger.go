@@ -17,7 +17,7 @@ func New(options badger.Options) fx.Option {
 
 	return fx.Options(
 		fx.Provide(libviper.WithSetDefault("badger.indexDir", path.Join(homeDir, ".{name}/badger/index"), "badger index dir")),
-		fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, ".{name}/badger/index"), "badger value dir")),
+		fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, ".{name}/badger/value"), "badger value dir")),
 
 		fx.Provide(ViperValueDir),
 		fx.Provide(ViperIndexDir),
@@ -28,11 +28,5 @@ func New(options badger.Options) fx.Option {
 		fx.Provide(Logger),
 
 		fx.Provide(NewBadger),
-
-		// fx.Provide(libviper.WithSetDefault("badger.indexDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "index"), "HTTP certificates")),
-		// fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, "."+libconfig.GetName(), "badger", "index"), "HTTP certificates")),
-		// fx.Provide(ViperAddr),
-		// fx.Provide(ViperCertificates),
-		// fx.Provide(NewServer),
 	)
 }

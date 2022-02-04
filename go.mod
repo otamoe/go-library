@@ -7,14 +7,17 @@ require (
 	github.com/chai2010/webp v1.1.0
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/disintegration/imaging v1.6.2
+	github.com/gabriel-vasile/mimetype v1.4.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/lni/dragonboat/v3 v3.3.4
+	github.com/rakyll/magicmime v0.1.0
 	github.com/shirou/gopsutil/v3 v3.21.11
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
 	go.uber.org/fx v1.16.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
+	google.golang.org/grpc v1.44.0
 )
 
 require (
@@ -67,9 +70,10 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
+	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20220118154757-00ab72f36ad5 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
