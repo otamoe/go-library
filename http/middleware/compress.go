@@ -22,9 +22,13 @@ type (
 	}
 
 	Compress struct {
-		Types     []string `json:"types,omitempty"`
+		Types []string `json:"types,omitempty"`
+
+		Br        bool
 		BrQuality int
 		BrLGWin   int
+
+		Gzip      bool
 		GzipLevel int
 
 		gzipPool *sync.Pool
@@ -85,7 +89,6 @@ func (w *compressResponseWriter) pre() {
 		gz.Reset(w.Writer)
 		w.Writer = gz
 	}
-
 }
 
 func (w *compressResponseWriter) Close() (err error) {
@@ -111,13 +114,13 @@ func (compress *Compress) Handler(next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		compressW := &compressResponseWriter{encoding: getEncoding(r), compress: compress, ResponseWriter: w, Writer: w}
+		compressW := &compressResponseWriter{encoding: compress.getEncoding(r), compress: compress, ResponseWriter: w, Writer: w}
 		defer compressW.Close()
 		next.ServeHTTP(compressW, r)
 	})
 }
 
-func getEncoding(req *http.Request) (encoding string) {
+func (compress *Compress) getEncoding(req *http.Request) (encoding string) {
 	if req.Method == http.MethodOptions {
 		return
 	}
@@ -130,11 +133,11 @@ func getEncoding(req *http.Request) (encoding string) {
 
 	for _, val := range strings.Split(req.Header.Get("Accept-Encoding"), ",") {
 		val = strings.TrimSpace(val)
-		if val == "br" {
+		if compress.Br && val == "br" {
 			encoding = val
 			break
 		}
-		if val == "gzip" {
+		if compress.Gzip && val == "gzip" {
 			encoding = val
 		}
 	}
