@@ -125,6 +125,11 @@ func Core() (c zapcore.Core) {
 }
 
 func Viper() {
+	if viper.GetString("env") == "development" {
+		SetLevelRegex("*", zap.DebugLevel)
+	} else {
+		SetLevelRegex("*", zap.InfoLevel)
+	}
 	for _, s := range viper.GetStringSlice("logger.level") {
 		i := strings.LastIndex(s, "=")
 		if i == -1 {
