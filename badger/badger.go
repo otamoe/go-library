@@ -10,14 +10,8 @@ import (
 )
 
 func New(options badger.Options) fx.Option {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
 
 	return fx.Options(
-		fx.Provide(libviper.WithSetDefault("badger.indexDir", path.Join(homeDir, ".{name}/badger/index"), "badger index dir")),
-		fx.Provide(libviper.WithSetDefault("badger.valueDir", path.Join(homeDir, ".{name}/badger/value"), "badger value dir")),
 
 		fx.Provide(ViperValueDir),
 		fx.Provide(ViperIndexDir),
@@ -29,4 +23,13 @@ func New(options badger.Options) fx.Option {
 
 		fx.Provide(NewBadger),
 	)
+}
+
+func init() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	libviper.SetDefault("badger.indexDir", path.Join(homeDir, ".{name}/badger/index"), "badger index dir")
+	libviper.SetDefault("badger.valueDir", path.Join(homeDir, ".{name}/badger/value"), "badger value dir")
 }

@@ -78,7 +78,7 @@ func (name *Name) Run(ctx context.Context, dir string, stdin io.Reader, stdout i
 			)
 		} else if name.slowQuery != 0 && latency > name.slowQuery {
 			name.logger.Warn(
-				"SlowQuery",
+				"slowQuery",
 				zap.Strings("args", args),
 				zap.String("dir", dir),
 				zap.Duration("latency", latency),

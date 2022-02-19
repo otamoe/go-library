@@ -10,8 +10,6 @@ import (
 
 func New() fx.Option {
 	return fx.Options(
-		fx.Provide(libviper.WithSetDefault("http.addr", ":8080", "HTTP addr")),
-		fx.Provide(libviper.WithSetDefault("http.certificates", []string{}, "HTTP certificates")),
 
 		fx.Provide(ViperAddr),
 		fx.Provide(ViperCertificates),
@@ -38,4 +36,9 @@ func Host(r *http.Request, defaultValue string) (host string) {
 	}
 
 	return defaultValue
+}
+
+func init() {
+	libviper.SetDefault("http.addr", ":8080", "HTTP addr")
+	libviper.SetDefault("http.certificates", []string{}, "HTTP certificates")
 }

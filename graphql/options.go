@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	ghandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	goLog "github.com/ipfs/go-log/v2"
 	"github.com/otamoe/go-library/graphql/handler"
 	libHttp "github.com/otamoe/go-library/http"
 	libHttpMiddleware "github.com/otamoe/go-library/http/middleware"
@@ -45,9 +46,9 @@ type (
 	}
 )
 
-func Host(v *viper.Viper) (out OutOption) {
+func Host() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
-		graphql.Host = v.GetString("graphql.host")
+		graphql.Host = viper.GetString("graphql.host")
 		return nil
 	}
 	return
@@ -88,10 +89,10 @@ func Cors() (out OutOption) {
 	return
 }
 
-func Logger(l *zap.Logger) (out OutOption) {
+func Logger() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
 		logger := &libHttpMiddleware.Logger{
-			Logger:    l.Named("http.graphql"),
+			Logger:    goLog.Logger("http.graphql").Desugar(),
 			SlowQuery: time.Second * 30,
 			Forwarded: true,
 		}
@@ -105,7 +106,7 @@ func Logger(l *zap.Logger) (out OutOption) {
 	return
 }
 
-func LoggerDisable(l *zap.Logger) (out OutOption) {
+func LoggerDisable() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
 		loggerDisable := &handler.LoggerEnable{
 			Enable: false,
@@ -123,7 +124,7 @@ func LoggerDisable(l *zap.Logger) (out OutOption) {
 //go:embed public
 var staticFS embed.FS
 
-func Static(l *zap.Logger) (out OutOption) {
+func Static() (out OutOption) {
 	// static 中间件
 	static := &libHttpMiddleware.Static{
 		FSPath:  "public",
@@ -203,7 +204,8 @@ func Server(server *ghandler.Server, path string) func() (out OutOption) {
 	}
 }
 
-func Recover(logger *zap.Logger) func(ctx context.Context, err interface{}) error {
+func Recover() func(ctx context.Context, err interface{}) error {
+	logger := goLog.Logger("http.graphql.recover").Desugar()
 	return func(ctx context.Context, err interface{}) (res error) {
 		switch val := err.(type) {
 		case string:

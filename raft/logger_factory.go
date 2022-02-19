@@ -3,15 +3,15 @@ package libraft
 import (
 	"sync"
 
+	goLog "github.com/ipfs/go-log/v2"
 	dlogger "github.com/lni/dragonboat/v3/logger"
 	"go.uber.org/zap"
 )
 
 type (
 	LoggerFactory struct {
-		mux    sync.Mutex
-		logger *zap.Logger
-		pkgs   map[string]*Logger
+		mux  sync.Mutex
+		pkgs map[string]*Logger
 	}
 )
 
@@ -24,17 +24,15 @@ func (loggerFactory *LoggerFactory) Create(pkgName string) dlogger.ILogger {
 	atomicLevel := zap.NewAtomicLevel()
 
 	loggerFactory.pkgs[pkgName] = &Logger{
-		SugaredLogger: loggerFactory.logger.Named(pkgName).WithOptions(zap.IncreaseLevel(atomicLevel)).Sugar(),
+		SugaredLogger: goLog.Logger("raft." + pkgName).Desugar().WithOptions(zap.IncreaseLevel(atomicLevel)).Sugar(),
 		atomicLevel:   atomicLevel,
 	}
 	return loggerFactory.pkgs[pkgName]
 }
 
-func NewLoggerFactory(logger *zap.Logger) (loggerFactory *LoggerFactory) {
-	loggerFactory = &LoggerFactory{
-		logger: logger.Named("raft"),
-		pkgs:   make(map[string]*Logger),
+func init() {
+	loggerFactory := &LoggerFactory{
+		pkgs: make(map[string]*Logger),
 	}
 	dlogger.SetLoggerFactory(loggerFactory.Create)
-	return loggerFactory
 }

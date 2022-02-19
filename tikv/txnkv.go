@@ -35,27 +35,27 @@ func TxntvOption(option pd.ClientOption) func() (out OutTxnkvOption) {
 	}
 }
 
-func Txnkv(ctx context.Context, lc fx.Lifecycle, v *viper.Viper, inTxnkvOptions InTxnkvOptions) (client *txnkv.Client, err error) {
+func Txnkv(ctx context.Context, lc fx.Lifecycle, inTxnkvOptions InTxnkvOptions) (client *txnkv.Client, err error) {
 	security := config.Security{
-		ClusterVerifyCN: v.GetStringSlice("tikv.txnkv.tls.cn"),
+		ClusterVerifyCN: viper.GetStringSlice("tikv.txnkv.tls.cn"),
 	}
 
 	rand := string(libutils.RandByte(8, libutils.RandAlphaNumber))
 
 	// ca 文件
 	security.ClusterSSLCA = path.Join(os.TempDir(), fmt.Sprintf("tikv-txnkv-tls-ca-%s", rand))
-	if err = ioutil.WriteFile(security.ClusterSSLCA, []byte(v.GetString("tikv.txnkv.tls.ca")), 0755); err != nil {
+	if err = ioutil.WriteFile(security.ClusterSSLCA, []byte(viper.GetString("tikv.txnkv.tls.ca")), 0755); err != nil {
 		return
 	}
 	// cert 文件
 	security.ClusterSSLCert = path.Join(os.TempDir(), fmt.Sprintf("tikv-txnkv-tls-cert-%s", rand))
-	if err = ioutil.WriteFile(security.ClusterSSLCert, []byte(v.GetString("tikv.txnkv.tls.cert")), 0755); err != nil {
+	if err = ioutil.WriteFile(security.ClusterSSLCert, []byte(viper.GetString("tikv.txnkv.tls.cert")), 0755); err != nil {
 		return
 	}
 
 	// key 文件
 	security.ClusterSSLKey = path.Join(os.TempDir(), fmt.Sprintf("tikv-txnkv-tls-key-%s", rand))
-	if err = ioutil.WriteFile(security.ClusterSSLKey, []byte(v.GetString("tikv.txnkv.tls.key")), 0755); err != nil {
+	if err = ioutil.WriteFile(security.ClusterSSLKey, []byte(viper.GetString("tikv.txnkv.tls.key")), 0755); err != nil {
 		return
 	}
 
@@ -64,7 +64,7 @@ func Txnkv(ctx context.Context, lc fx.Lifecycle, v *viper.Viper, inTxnkvOptions 
 
 	config.StoreGlobalConfig(cfg)
 
-	if client, err = txnkv.NewClient(v.GetStringSlice("tikv.txnkv.pdAddress")); err != nil {
+	if client, err = txnkv.NewClient(viper.GetStringSlice("tikv.txnkv.pdAddress")); err != nil {
 		return
 	}
 

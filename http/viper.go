@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ViperAddr(v *viper.Viper) (out OutOption) {
-	addr := v.GetString("http.addr")
+func ViperAddr() (out OutOption) {
+	addr := viper.GetString("http.addr")
 	if addr != "" {
 		out = WithAddr(addr)()
 	} else {
@@ -19,8 +19,8 @@ func ViperAddr(v *viper.Viper) (out OutOption) {
 	return
 }
 
-func ViperCertificates(v *viper.Viper) (out OutOption) {
-	certificates := v.GetStringSlice("http.certificates")
+func ViperCertificates() (out OutOption) {
+	certificates := viper.GetStringSlice("http.certificates")
 	fcertificates := []string{}
 	for _, c := range certificates {
 		c = strings.TrimSpace(c)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	vasilemimetype "github.com/gabriel-vasile/mimetype"
+	goLog "github.com/ipfs/go-log/v2"
 	libcommand "github.com/otamoe/go-library/command"
 	"github.com/rakyll/magicmime"
 	"go.uber.org/fx"
@@ -94,9 +95,9 @@ func (exiftoolCommand *ExiftoolCommand) Get(ctx context.Context, header []byte) 
 	}
 }
 
-func NewExiftoolCommand(logger *zap.Logger, command *libcommand.Command) *ExiftoolCommand {
+func NewExiftoolCommand(command *libcommand.Command) *ExiftoolCommand {
 	exiftoolCommand := &ExiftoolCommand{
-		logger:  logger.Named("exiftool"),
+		logger:  goLog.Logger("exiftool").Desugar(),
 		command: command.Command("exiftool", runtime.NumCPU()*30, time.Second*10),
 	}
 	return exiftoolCommand

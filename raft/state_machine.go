@@ -14,7 +14,6 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	dstatemachine "github.com/lni/dragonboat/v3/statemachine"
 	libraftpb "github.com/otamoe/go-library/raft/pb"
-	"go.uber.org/zap"
 )
 
 type (
@@ -39,14 +38,14 @@ const (
 	StateMachineResultCodeFailure uint64 = 1
 )
 
-func NewStateMachine(db *badger.DB, logger *zap.Logger, event StateMachineEventFunc) dstatemachine.CreateConcurrentStateMachineFunc {
+func NewStateMachine(db *badger.DB, event StateMachineEventFunc) dstatemachine.CreateConcurrentStateMachineFunc {
 	return func(clusterID uint64, nodeID uint64) dstatemachine.IConcurrentStateMachine {
 		stateMachine := &StateMachine{
 			db:        db,
 			clusterID: clusterID,
 			nodeID:    nodeID,
 		}
-		stateMachine.event = NewStateMachineEvent(clusterID, nodeID, event, logger.Named("event"))
+		stateMachine.event = NewStateMachineEvent(clusterID, nodeID, event)
 		go stateMachine.event.Start()
 
 		return stateMachine

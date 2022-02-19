@@ -34,17 +34,21 @@ type (
 	Server func(s *grpc.Server) (err error)
 )
 
-func ServerOption(o grpc.ServerOption) (out OutServerOption) {
-	out.Option = o
-	return
+func ServerOption(o grpc.ServerOption) func() (out OutServerOption) {
+	return func() (out OutServerOption) {
+		out.Option = o
+		return
+	}
 }
 
-func RegisterServer(s Server) (out OutServer) {
-	out.Server = s
-	return
+func RegisterServer(s Server) func() (out OutServer) {
+	return func() (out OutServer) {
+		out.Server = s
+		return
+	}
 }
 
-func NewServer(inServerOptions InServerOptions, inServers InServers, v *viper.Viper, lc fx.Lifecycle) (server *grpc.Server, err error) {
+func NewServer(inServerOptions InServerOptions, inServers InServers, lc fx.Lifecycle) (server *grpc.Server, err error) {
 	server = grpc.NewServer(inServerOptions.Options...)
 
 	// 注册服务
@@ -58,7 +62,7 @@ func NewServer(inServerOptions InServerOptions, inServers InServers, v *viper.Vi
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) (err error) {
 			var lis net.Listener
-			if lis, err = net.Listen("tcp", v.GetString("grpc.listenAddress")); err != nil {
+			if lis, err = net.Listen("tcp", viper.GetString("grpc.listenAddress")); err != nil {
 				return
 			}
 			go server.Serve(lis)

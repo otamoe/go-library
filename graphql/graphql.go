@@ -7,7 +7,6 @@ import (
 
 func New(hosts []string) (fxOption fx.Option) {
 	return fx.Provide(
-		fx.Provide(libviper.WithSetDefault("graphql.host", "graphql.localhost", "graphql host")),
 		fx.Provide(Host),
 		fx.Provide(Compress),
 		fx.Provide(Cors),
@@ -18,4 +17,8 @@ func New(hosts []string) (fxOption fx.Option) {
 
 		fx.Provide(NewGraphql),
 	)
+}
+
+func init() {
+	libviper.SetDefault("graphql.host", "graphql.localhost", "graphql host")
 }

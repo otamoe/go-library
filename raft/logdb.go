@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v3"
+	goLog "github.com/ipfs/go-log/v2"
 	draftio "github.com/lni/dragonboat/v3/raftio"
 	draftpb "github.com/lni/dragonboat/v3/raftpb"
 	"go.uber.org/zap"
@@ -46,10 +47,10 @@ type (
 	}
 )
 
-func NewLogDB(db *badger.DB, logger *zap.Logger) (logDB *LogDB, err error) {
+func NewLogDB(db *badger.DB) (logDB *LogDB, err error) {
 	logDB = &LogDB{
 		db:     db,
-		logger: logger,
+		logger: goLog.Logger("raft.logdb").Desugar(),
 		cache:  newCache(),
 	}
 	return

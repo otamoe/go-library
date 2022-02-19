@@ -3,28 +3,24 @@ package libraft
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/lni/dragonboat/v3"
 	dconfig "github.com/lni/dragonboat/v3/config"
 	dstatemachine "github.com/lni/dragonboat/v3/statemachine"
 	libraftpb "github.com/otamoe/go-library/raft/pb"
-	"go.uber.org/zap"
 )
 
 type (
 	Cluster struct {
 		nodeHost *dragonboat.NodeHost
-		logger   *zap.Logger
 		db       *badger.DB
 	}
 )
 
-func NewCluster(db *badger.DB, logger *zap.Logger, nodeHost *dragonboat.NodeHost) *Cluster {
+func NewCluster(db *badger.DB, nodeHost *dragonboat.NodeHost) *Cluster {
 	return &Cluster{
 		db:       db,
-		logger:   logger.Named("raft"),
 		nodeHost: nodeHost,
 	}
 }
@@ -72,7 +68,7 @@ func (cluster *Cluster) Start(bootstrap map[uint64]string, rc dconfig.Config, ev
 	}
 	rc.DisableAutoCompactions = true
 
-	if err = cluster.nodeHost.StartConcurrentCluster(initialMembers, join, NewStateMachine(cluster.db, cluster.logger.Named(fmt.Sprintf("cluster-%s", rc.ClusterID)), event), rc); err != nil {
+	if err = cluster.nodeHost.StartConcurrentCluster(initialMembers, join, NewStateMachine(cluster.db, event), rc); err != nil {
 		return
 	}
 	return

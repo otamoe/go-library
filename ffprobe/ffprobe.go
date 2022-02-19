@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	goLog "github.com/ipfs/go-log/v2"
 	libcommand "github.com/otamoe/go-library/command"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -198,9 +199,9 @@ func (ffprobeCommand *FFprobeCommand) Get(ctx context.Context, u *url.URL) (res 
 	}
 }
 
-func NewFFprobeCommand(logger *zap.Logger, command *libcommand.Command) *FFprobeCommand {
+func NewFFprobeCommand(command *libcommand.Command) *FFprobeCommand {
 	ffprobeCommand := &FFprobeCommand{
-		logger:  logger.Named("ffprobe"),
+		logger:  goLog.Logger("ffprobe").Desugar(),
 		command: command.Command("ffprobe", runtime.NumCPU()*30, time.Second*60),
 	}
 	return ffprobeCommand

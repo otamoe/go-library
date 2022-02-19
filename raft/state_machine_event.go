@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	goLog "github.com/ipfs/go-log/v2"
 	libraftpb "github.com/otamoe/go-library/raft/pb"
 	"go.uber.org/zap"
 )
@@ -32,11 +33,12 @@ type (
 	}
 )
 
-func NewStateMachineEvent(clusterID uint64, nodeID uint64, event StateMachineEventFunc, logger *zap.Logger) *StateMachineEvent {
+func NewStateMachineEvent(clusterID uint64, nodeID uint64, event StateMachineEventFunc) *StateMachineEvent {
 	return &StateMachineEvent{
 		clusterID: clusterID,
 		nodeID:    nodeID,
 		event:     event,
+		logger:    goLog.Logger("raft.event").Desugar(),
 		values:    make(chan *StateMachineEventValue, 200),
 		closing:   make(chan struct{}),
 		closed:    make(chan struct{}),
@@ -74,7 +76,13 @@ func (stateMachineEvent *StateMachineEvent) runOne(value *StateMachineEventValue
 			default:
 				err = errors.New(fmt.Sprintf("%+v", err))
 			}
-			stateMachineEvent.logger.Error("recover", zap.Error(err), zap.Stack("stack"))
+			stateMachineEvent.logger.Error(
+				"recover",
+				zap.Error(err),
+				zap.Uint64("clusterID", stateMachineEvent.clusterID),
+				zap.Uint64("nodeID", stateMachineEvent.nodeID),
+				zap.Stack("stack"),
+			)
 		}
 	}()
 	stateMachineEvent.event(stateMachineEvent.clusterID, stateMachineEvent.nodeID, value.NewItem, value.OldItem)
