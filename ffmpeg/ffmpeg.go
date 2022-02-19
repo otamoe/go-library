@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	goLog "github.com/ipfs/go-log/v2"
 	libcommand "github.com/otamoe/go-library/command"
+	liblogger "github.com/otamoe/go-library/logger"
 	libutils "github.com/otamoe/go-library/utils"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -115,13 +115,13 @@ func (ffmpegCommand *FFmpegCommand) Get(ctx context.Context, typ Type, args []st
 
 func NewFFmpegCommand(command *libcommand.Command) *FFmpegCommand {
 	ffmpegCommand := &FFmpegCommand{
-		transcodingLogger:  goLog.Logger("ffmpeg.transcoding").Desugar(),
+		transcodingLogger:  liblogger.Get("ffmpeg.transcoding"),
 		transcodingCommand: command.Command("ffmpeg-transcoding", (runtime.NumCPU()/2)+1, time.Second*3600),
 
-		screenshotLogger:  goLog.Logger("ffmpeg.screenshot").Desugar(),
+		screenshotLogger:  liblogger.Get("ffmpeg.screenshot"),
 		screenshotCommand: command.Command("ffmpeg-screenshot", runtime.NumCPU()*30, time.Second*30),
 
-		keyframeLogger:  goLog.Logger("ffmpeg.keyframe").Desugar(),
+		keyframeLogger:  liblogger.Get("ffmpeg.keyframe"),
 		keyframeCommand: command.Command("ffmpeg-keyframe", runtime.NumCPU()*5, time.Second*600),
 	}
 

@@ -13,10 +13,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	ghandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	goLog "github.com/ipfs/go-log/v2"
 	"github.com/otamoe/go-library/graphql/handler"
 	libHttp "github.com/otamoe/go-library/http"
 	libHttpMiddleware "github.com/otamoe/go-library/http/middleware"
+	liblogger "github.com/otamoe/go-library/logger"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -92,7 +92,7 @@ func Cors() (out OutOption) {
 func Logger() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
 		logger := &libHttpMiddleware.Logger{
-			Logger:    goLog.Logger("http.graphql").Desugar(),
+			Logger:    liblogger.Get("http.graphql"),
 			SlowQuery: time.Second * 30,
 			Forwarded: true,
 		}
@@ -205,7 +205,7 @@ func Server(server *ghandler.Server, path string) func() (out OutOption) {
 }
 
 func Recover() func(ctx context.Context, err interface{}) error {
-	logger := goLog.Logger("http.graphql.recover").Desugar()
+	logger := liblogger.Get("http.graphql.recover")
 	return func(ctx context.Context, err interface{}) (res error) {
 		switch val := err.(type) {
 		case string:

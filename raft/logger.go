@@ -2,30 +2,31 @@ package libraft
 
 import (
 	dlogger "github.com/lni/dragonboat/v3/logger"
+	liblogger "github.com/otamoe/go-library/logger"
 	"go.uber.org/zap"
 )
 
 type (
 	Logger struct {
 		*zap.SugaredLogger
-		atomicLevel zap.AtomicLevel
+		name string
 	}
 )
 
 func (logger *Logger) SetLevel(level dlogger.LogLevel) {
 	switch level {
 	case dlogger.DEBUG:
-		logger.atomicLevel.Enabled(zap.DebugLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.DebugLevel)
 	case dlogger.INFO:
-		logger.atomicLevel.Enabled(zap.InfoLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.InfoLevel)
 	case dlogger.WARNING:
-		logger.atomicLevel.Enabled(zap.WarnLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.WarnLevel)
 	case dlogger.ERROR:
-		logger.atomicLevel.Enabled(zap.ErrorLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.ErrorLevel)
 	case dlogger.CRITICAL:
-		logger.atomicLevel.Enabled(zap.DPanicLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.DPanicLevel)
 	default:
-		logger.atomicLevel.Enabled(zap.InfoLevel)
+		liblogger.SetLevel("raft."+logger.name, zap.InfoLevel)
 	}
 }
 

@@ -2,6 +2,7 @@ package libcommand
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os/exec"
 	"time"
@@ -11,13 +12,14 @@ import (
 
 type (
 	Name struct {
-		logger    *zap.Logger
 		name      string
 		worker    int
 		slowQuery time.Duration
 		workerCH  chan bool
 	}
 )
+
+var ErrSlowQuery = errors.New("slow Query")
 
 func (name *Name) Run(ctx context.Context, dir string, stdin io.Reader, stdout io.Writer, stderr io.Writer, args ...string) (run *Run) {
 	run = &Run{
@@ -68,8 +70,8 @@ func (name *Name) Run(ctx context.Context, dir string, stdin io.Reader, stdout i
 
 		latency := time.Now().Sub(now)
 		if err != nil {
-			name.logger.Error(
-				"error",
+			logger.Error(
+				name.name,
 				zap.Strings("args", args),
 				zap.String("dir", dir),
 				zap.Duration("latency", latency),
@@ -77,8 +79,9 @@ func (name *Name) Run(ctx context.Context, dir string, stdin io.Reader, stdout i
 				zap.String("stderr", run.stderr.b.String()),
 			)
 		} else if name.slowQuery != 0 && latency > name.slowQuery {
-			name.logger.Warn(
-				"slowQuery",
+			logger.Warn(
+				name.name,
+				zap.Error(ErrSlowQuery),
 				zap.Strings("args", args),
 				zap.String("dir", dir),
 				zap.Duration("latency", latency),
@@ -86,8 +89,8 @@ func (name *Name) Run(ctx context.Context, dir string, stdin io.Reader, stdout i
 				zap.String("stderr", run.stderr.b.String()),
 			)
 		} else {
-			name.logger.Info(
-				"info",
+			logger.Info(
+				name.name,
 				zap.Strings("args", args),
 				zap.String("dir", dir),
 				zap.Duration("latency", latency),

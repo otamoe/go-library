@@ -3,9 +3,8 @@ package libraft
 import (
 	"sync"
 
-	goLog "github.com/ipfs/go-log/v2"
 	dlogger "github.com/lni/dragonboat/v3/logger"
-	"go.uber.org/zap"
+	liblogger "github.com/otamoe/go-library/logger"
 )
 
 type (
@@ -21,11 +20,10 @@ func (loggerFactory *LoggerFactory) Create(pkgName string) dlogger.ILogger {
 	if val, ok := loggerFactory.pkgs[pkgName]; ok {
 		return val
 	}
-	atomicLevel := zap.NewAtomicLevel()
 
 	loggerFactory.pkgs[pkgName] = &Logger{
-		SugaredLogger: goLog.Logger("raft." + pkgName).Desugar().WithOptions(zap.IncreaseLevel(atomicLevel)).Sugar(),
-		atomicLevel:   atomicLevel,
+		SugaredLogger: liblogger.Get("raft." + pkgName).Sugar(),
+		name:          pkgName,
 	}
 	return loggerFactory.pkgs[pkgName]
 }

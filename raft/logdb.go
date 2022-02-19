@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v3"
-	goLog "github.com/ipfs/go-log/v2"
 	draftio "github.com/lni/dragonboat/v3/raftio"
 	draftpb "github.com/lni/dragonboat/v3/raftpb"
+	liblogger "github.com/otamoe/go-library/logger"
 	"go.uber.org/zap"
 )
 
@@ -50,7 +50,7 @@ type (
 func NewLogDB(db *badger.DB) (logDB *LogDB, err error) {
 	logDB = &LogDB{
 		db:     db,
-		logger: goLog.Logger("raft.logdb").Desugar(),
+		logger: liblogger.Get("raft.logdb"),
 		cache:  newCache(),
 	}
 	return

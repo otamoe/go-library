@@ -3,7 +3,6 @@ package liblogger
 import (
 	"strings"
 
-	goLog "github.com/ipfs/go-log/v2"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
@@ -15,7 +14,7 @@ type (
 )
 
 func FxLogger() fxevent.Logger {
-	return &fxLogger{Logger: goLog.Logger("fx").Desugar()}
+	return &fxLogger{Logger: Get("fx")}
 }
 
 func (l *fxLogger) LogEvent(event fxevent.Event) {

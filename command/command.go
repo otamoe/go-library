@@ -3,20 +3,19 @@ package libcommand
 import (
 	"time"
 
-	goLog "github.com/ipfs/go-log/v2"
+	liblogger "github.com/otamoe/go-library/logger"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type (
 	Command struct {
-		logger *zap.Logger
 	}
 )
 
+var logger = liblogger.Get("command")
+
 func (command *Command) Command(name string, worker int, slowQuery time.Duration) *Name {
 	return &Name{
-		logger:    goLog.Logger("command." + name).Desugar(),
 		worker:    worker,
 		slowQuery: slowQuery,
 		name:      name,
@@ -31,8 +30,6 @@ func New() fx.Option {
 }
 
 func NewCommand() *Command {
-	command := &Command{
-		logger: goLog.Logger("command").Desugar(),
-	}
+	command := &Command{}
 	return command
 }
