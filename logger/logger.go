@@ -2,8 +2,11 @@ package liblogger
 
 import (
 	"regexp"
+	"strings"
 	"sync"
 
+	libviper "github.com/otamoe/go-library/viper"
+	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -20,6 +23,9 @@ var loggers = make(map[string]*zap.Logger)
 // core 接口
 var core = &interfaceCore{}
 
+//  regexLevel 匹配设置 的 level
+var regexLevels = make([]regexLevel, 0)
+
 type (
 	regexLevel struct {
 		regex *regexp.Regexp
@@ -31,10 +37,9 @@ type (
 	}
 )
 
-//  regexLevel 匹配设置 的 level
-var regexLevels = make([]regexLevel, 0)
-
 func init() {
+	libviper.SetDefault("logger.level", []string{}, "logger level")
+
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	cfg.Level = zap.NewAtomicLevelAt(zapcore.Level(zap.DebugLevel))
@@ -117,4 +122,18 @@ func SetCore(c zapcore.Core) {
 
 func Core() (c zapcore.Core) {
 	return core.Core
+}
+
+func Viper() {
+	for _, s := range viper.GetStringSlice("logger.level") {
+		i := strings.LastIndex(s, "=")
+		if i == -1 {
+			SetLevelRegex(s, zapcore.InfoLevel)
+			continue
+		}
+
+		var l zapcore.Level = zap.InfoLevel
+		l.Set(s[i+1:])
+		SetLevelRegex(s[0:i], l)
+	}
 }
