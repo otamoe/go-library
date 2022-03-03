@@ -20,6 +20,8 @@ func Parse() (err error) {
 	// 自动 绑定 env 环境
 	viper.AutomaticEnv()
 
+	pflag.Parse()
+
 	// 解析 flag
 	if err = viper.BindPFlags(pflag.CommandLine); err != nil {
 		return
