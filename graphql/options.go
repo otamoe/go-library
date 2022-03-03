@@ -14,8 +14,8 @@ import (
 	ghandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/otamoe/go-library/graphql/handler"
-	libHttp "github.com/otamoe/go-library/http"
-	libHttpMiddleware "github.com/otamoe/go-library/http/middleware"
+	libhttp "github.com/otamoe/go-library/http"
+	libhttpMiddleware "github.com/otamoe/go-library/http/middleware"
 	liblogger "github.com/otamoe/go-library/logger"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -40,7 +40,7 @@ type (
 	Option func(graphql *Graphql) error
 
 	Handler struct {
-		Handler libHttp.HandlerFunc
+		Handler libhttp.HandlerFunc
 		Index   int
 		Name    string
 	}
@@ -56,7 +56,7 @@ func Host() (out OutOption) {
 
 func Compress() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
-		compress := &libHttpMiddleware.Compress{
+		compress := &libhttpMiddleware.Compress{
 			Types:     []string{"text/", "application/json", "application/javascript", "application/atom+xml", "application/rss+xml", "application/xml"},
 			Gzip:      true,
 			GzipLevel: gzip.DefaultCompression,
@@ -74,7 +74,7 @@ func Compress() (out OutOption) {
 }
 func Cors() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
-		cors := &libHttpMiddleware.Cors{
+		cors := &libhttpMiddleware.Cors{
 			Methods: []string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE"},
 			Origins: []string{"*"},
 			MaxAge:  86400 * 31,
@@ -91,7 +91,7 @@ func Cors() (out OutOption) {
 
 func Logger() (out OutOption) {
 	out.Option = func(graphql *Graphql) error {
-		logger := &libHttpMiddleware.Logger{
+		logger := &libhttpMiddleware.Logger{
 			Logger:    liblogger.Get("http.graphql"),
 			SlowQuery: time.Second * 30,
 			Forwarded: true,
@@ -126,7 +126,7 @@ var staticFS embed.FS
 
 func Static() (out OutOption) {
 	// static 中间件
-	static := &libHttpMiddleware.Static{
+	static := &libhttpMiddleware.Static{
 		FSPath:  "public",
 		MaxAge:  86400 * 31,
 		FS:      staticFS,
@@ -242,7 +242,7 @@ func Recover() func(ctx context.Context, err interface{}) error {
 	}
 }
 
-func NewGraphql(inOptions InOptions) (graphql *Graphql, httpOutOption libHttp.OutOption) {
+func NewGraphql(inOptions InOptions) (graphql *Graphql, httpOutOption libhttp.OutOption) {
 	graphql = &Graphql{}
 	for _, o := range inOptions.Options {
 		o(graphql)
@@ -255,7 +255,7 @@ func NewGraphql(inOptions InOptions) (graphql *Graphql, httpOutOption libHttp.Ou
 	for _, handler := range graphql.Handlers {
 		handlers = append(handlers, handler)
 	}
-	httpOutOption.Option = func(server *libHttp.Server) error {
+	httpOutOption.Option = func(server *libhttp.Server) error {
 		existsHandler := map[string]bool{}
 		for _, handler := range handlers {
 			if handler.Name != "" {
@@ -264,7 +264,7 @@ func NewGraphql(inOptions InOptions) (graphql *Graphql, httpOutOption libHttp.Ou
 				}
 				existsHandler[handler.Name] = true
 			}
-			server.Handlers = append(server.Handlers, libHttp.HandlerOption{
+			server.Handlers = append(server.Handlers, libhttp.HandlerOption{
 				Hosts:   []string{graphql.Host},
 				Handler: handler.Handler,
 				Index:   handler.Index,

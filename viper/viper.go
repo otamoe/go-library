@@ -13,6 +13,7 @@ import (
 
 func init() {
 	SetDefault("env", "production", "Environment type  production, development, test")
+	SetDefault("help", false, "print help")
 }
 
 func Parse() (err error) {
@@ -25,6 +26,14 @@ func Parse() (err error) {
 	}
 
 	return
+}
+
+func PrintDefaults() (ok bool) {
+	if viper.GetBool("help") {
+		pflag.PrintDefaults()
+		return true
+	}
+	return false
 }
 
 func SetDefault(name string, value interface{}, usage string) {
