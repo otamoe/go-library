@@ -85,6 +85,9 @@ func Get(name string) (log *zap.Logger) {
 
 // 设置 level 级别 按照 正则匹配name
 func SetLevelRegex(expr string, level zapcore.Level) {
+	if expr == "*" {
+		expr = ".*"
+	}
 	regex, err := regexp.Compile(expr)
 	if err != nil {
 		return
@@ -126,9 +129,9 @@ func Core() (c zapcore.Core) {
 
 func Viper() {
 	if viper.GetString("env") == "development" {
-		SetLevelRegex("*", zap.DebugLevel)
+		SetLevelRegex("*", zapcore.DebugLevel)
 	} else {
-		SetLevelRegex("*", zap.InfoLevel)
+		SetLevelRegex("*", zapcore.InfoLevel)
 	}
 	for _, s := range viper.GetStringSlice("logger.level") {
 		i := strings.LastIndex(s, "=")
@@ -137,8 +140,9 @@ func Viper() {
 			continue
 		}
 
-		var l zapcore.Level = zap.InfoLevel
-		l.Set(s[i+1:])
-		SetLevelRegex(s[0:i], l)
+		var l zapcore.Level = zapcore.InfoLevel
+		if err := l.Set(s[i+1:]); err == nil {
+			SetLevelRegex(s[0:i], l)
+		}
 	}
 }
