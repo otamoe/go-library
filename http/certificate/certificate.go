@@ -185,6 +185,7 @@ func CreateTLSCertificate(typ string, bits int, commonName string, domains []str
 	if pub, err = ReadPubliKey(priv); err != nil {
 		return
 	}
+
 	x509Certificate := &x509.Certificate{
 		Subject: pkix.Name{
 			CommonName: commonName,
@@ -209,6 +210,9 @@ func CreateTLSCertificate(typ string, bits int, commonName string, domains []str
 		x509Certificate.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign // 证书用途   数字签名, 证书签名, CRL签名
 		x509Certificate.MaxPathLen = 4
 		x509Certificate.MaxPathLenZero = false
+		x509Certificate.DNSNames = nil
+		x509Certificate.PermittedDNSDomains = nil
+		x509Certificate.PermittedURIDomains = nil
 	} else {
 		x509Certificate.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment // 证书用途  数字签名, 密钥加密
 	}
