@@ -191,7 +191,7 @@ func CreateTLSCertificate(typ string, bits int, commonName string, domains []str
 			CommonName: commonName,
 		},
 
-		NotAfter:              time.Date(2037, time.January, 1, 0, 0, 0, 0, time.UTC),                     // 过期数据
+		// NotAfter:              time.Date(2037, time.January, 1, 0, 0, 0, 0, time.UTC),                     // 过期数据
 		BasicConstraintsValid: true,                                                                       //基本的有效性约束
 		IsCA:                  isCA,                                                                       // 是否是CA
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth}, // 扩展证书用途 客户端认证, 服务端认证
