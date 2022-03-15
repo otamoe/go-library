@@ -164,7 +164,7 @@ func NewServer(inOptions InOptions, lc fx.Lifecycle) (server *Server, err error)
 	return
 }
 
-func WithAddr(addr string) func() (out OutOption) {
+func WithListenAddress(addr string) func() (out OutOption) {
 	return func() (out OutOption) {
 		out.Option = func(server *Server) error {
 			server.Addr = addr

@@ -11,8 +11,7 @@ import (
 func New() fx.Option {
 	return fx.Options(
 
-		fx.Provide(ViperAddr),
-		fx.Provide(ViperCertificates),
+		fx.Provide(WithListenAddress),
 
 		fx.Provide(NewServer),
 	)
@@ -39,6 +38,5 @@ func Host(r *http.Request, defaultValue string) (host string) {
 }
 
 func init() {
-	libviper.SetDefault("http.addr", ":8080", "HTTP addr")
-	libviper.SetDefault("http.certificates", []string{}, "HTTP certificates")
+	libviper.SetDefault("http.listenAddress", ":8080", "HTTP listen address")
 }

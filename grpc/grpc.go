@@ -22,6 +22,5 @@ func New() fx.Option {
 }
 
 func init() {
-	libviper.SetDefault("grpc.address", "127.0.0.1:6601", "grpc address")
 	libviper.SetDefault("grpc.listenAddress", "127.0.0.1:6601", "grpc listen address")
 }
