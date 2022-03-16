@@ -11,7 +11,7 @@ import (
 func New() fx.Option {
 	return fx.Options(
 
-		fx.Provide(WithListenAddress),
+		fx.Provide(ViperListenAddress),
 
 		fx.Provide(NewServer),
 	)
