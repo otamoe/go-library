@@ -17,6 +17,14 @@ func init() {
 }
 
 func Parse() (err error) {
+	// 解析配置文件
+	if err = viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return
+		}
+		err = nil
+	}
+
 	// 自动 绑定 env 环境
 	viper.AutomaticEnv()
 
