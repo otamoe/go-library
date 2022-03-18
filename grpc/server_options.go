@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
@@ -31,7 +30,8 @@ type (
 		Option grpc.ServerOption `group:"grpcServerOptions"`
 	}
 
-	Server func(s *grpc.Server) (err error)
+	ListenAddress string
+	Server        func(s *grpc.Server) (err error)
 )
 
 func ServerOption(o grpc.ServerOption) func() (out OutServerOption) {
@@ -48,7 +48,7 @@ func RegisterServer(s Server) func() (out OutServer) {
 	}
 }
 
-func NewServer(inServerOptions InServerOptions, inServers InServers, lc fx.Lifecycle) (server *grpc.Server, err error) {
+func NewServer(inServerOptions InServerOptions, inServers InServers, listenAddress ListenAddress, lc fx.Lifecycle) (server *grpc.Server, err error) {
 	server = grpc.NewServer(inServerOptions.Options...)
 
 	// 注册服务
@@ -62,7 +62,7 @@ func NewServer(inServerOptions InServerOptions, inServers InServers, lc fx.Lifec
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) (err error) {
 			var lis net.Listener
-			if lis, err = net.Listen("tcp", viper.GetString("grpc.listenAddress")); err != nil {
+			if lis, err = net.Listen("tcp", string(listenAddress)); err != nil {
 				return
 			}
 			go server.Serve(lis)

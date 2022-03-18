@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/url"
 
-	libviper "github.com/otamoe/go-library/viper"
 	"go.uber.org/fx"
 )
 
@@ -35,8 +34,4 @@ func Host(r *http.Request, defaultValue string) (host string) {
 	}
 
 	return defaultValue
-}
-
-func init() {
-	libviper.SetDefault("http.listenAddress", ":8080", "HTTP listen address")
 }

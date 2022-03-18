@@ -3,7 +3,6 @@ package libgrpc
 import (
 	"time"
 
-	libviper "github.com/otamoe/go-library/viper"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
@@ -19,8 +18,4 @@ func New() fx.Option {
 		fx.Provide(ServerOption(grpc.WriteBufferSize(1024*128))),
 		fx.Provide(NewServer),
 	)
-}
-
-func init() {
-	libviper.SetDefault("grpc.listenAddress", "127.0.0.1:8090", "grpc listen address")
 }
