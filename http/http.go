@@ -10,8 +10,6 @@ import (
 func New() fx.Option {
 	return fx.Options(
 
-		fx.Provide(ViperListenAddress),
-
 		fx.Provide(NewServer),
 	)
 }
