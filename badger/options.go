@@ -54,7 +54,7 @@ func NewOptions(inOptions InOptions) (options badger.Options, err error) {
 	return
 }
 
-func NewExtendedOption(inExtendedOptions InExtendedOptions) (extendedOption *ExtendedOption, err error) {
+func NewExtendedOption(inExtendedOptions InExtendedOptions) (extendedOptions *ExtendedOptions, err error) {
 	extendedOptions = &ExtendedOptions{
 		GCDiscardRatio: 0.5,
 		GCInterval:     time.Minute * 15,
@@ -67,7 +67,7 @@ func NewExtendedOption(inExtendedOptions InExtendedOptions) (extendedOption *Ext
 		}
 	}
 
-	return extendedOption
+	return
 }
 
 func NewBadger(lc fx.Lifecycle, options badger.Options, extendedOptions *ExtendedOptions) (db *badger.DB, err error) {
@@ -107,20 +107,32 @@ func DefaultOptions() badger.Options {
 		panic(err)
 	}
 	memorySize := GetMemorySize()
+	memTableSize := memorySize / 32
+	if memTableSize > 1024*1024*256 {
+		memTableSize = 1024 * 1024 * 256
+	}
+	blockCacheSize := memorySize / 32
+	if blockCacheSize > 1024*1024*1024 {
+		blockCacheSize = 1024 * 1024 * 1024
+	}
+	indexCacheSize := memorySize / 32
+	if indexCacheSize > 1024*1024*1024 {
+		indexCacheSize = 1024 * 1024 * 1024
+	}
 	return badger.DefaultOptions(path.Join(homeDir, ".badger/index")).
 		WithValueDir(path.Join(homeDir, ".badger/value")).
-		WithBaseTableSize(1024 * 1024 * 8).
-		WithMemTableSize(int64(memorySize / 32)).
+		WithBaseTableSize(1024 * 1024 * 4).
+		WithMemTableSize(memTableSize).
 		WithValueThreshold(1024 * 1).
-		WithBlockCacheSize(int64(memorySize / 32)).
-		WithIndexCacheSize(int64(memorySize / 32))
+		WithBlockCacheSize(blockCacheSize).
+		WithIndexCacheSize(indexCacheSize)
 }
 
-func GetMemorySize() uint64 {
+func GetMemorySize() int64 {
 	// 读取内存
 	memStat, err := mem.VirtualMemory()
 	if err != nil {
 		panic(fmt.Errorf("get memory size", err))
 	}
-	return memStat.Total
+	return int64(memStat.Total)
 }
