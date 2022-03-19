@@ -54,7 +54,7 @@ func NewOptions(inOptions InOptions) (options badger.Options, err error) {
 	return
 }
 
-func NewExtendedOption(inExtendedOptions InExtendedOptions) (extendedOption *ExtendedOption) {
+func NewExtendedOption(inExtendedOptions InExtendedOptions) (extendedOption *ExtendedOption, err error) {
 	extendedOptions = &ExtendedOptions{
 		GCDiscardRatio: 0.5,
 		GCInterval:     time.Minute * 15,

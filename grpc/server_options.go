@@ -64,7 +64,7 @@ func RegisterServer(s Server) func() (out OutServer) {
 	}
 }
 
-func NewExtendedServerOptions(inExtendedServerOptions InExtendedServerOptions) (extendedServerOptions *ExtendedServerOptions) {
+func NewExtendedServerOptions(inExtendedServerOptions InExtendedServerOptions) (extendedServerOptions *ExtendedServerOptions, err error) {
 	extendedServerOptions = &ExtendedServerOptions{
 		ListenNetwork: "tcp",
 		ListenAddress: ":8090",
