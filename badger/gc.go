@@ -23,6 +23,7 @@ func GC(ctx context.Context, extendedOptions *ExtendedOptions, db *badger.DB) {
 				t.Reset(extendedOptions.GCSleep)
 			case badger.ErrDBClosed:
 				// 被关闭 返回
+
 				return
 			default:
 				// 其他错误
