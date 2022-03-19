@@ -17,5 +17,6 @@ func New() fx.Option {
 		fx.Provide(ServerOption(grpc.ReadBufferSize(1024*128))),
 		fx.Provide(ServerOption(grpc.WriteBufferSize(1024*128))),
 		fx.Provide(NewServer),
+		fx.Provide(NewExtendedServerOptions),
 	)
 }

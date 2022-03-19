@@ -20,6 +20,8 @@ type (
 		Server Server `group:"grpcServers"`
 	}
 
+	Server func(s *grpc.Server) (err error)
+
 	InServerOptions struct {
 		fx.In
 		Options []grpc.ServerOption `group:"grpcServerOptions"`
@@ -30,8 +32,22 @@ type (
 		Option grpc.ServerOption `group:"grpcServerOptions"`
 	}
 
-	ListenAddress string
-	Server        func(s *grpc.Server) (err error)
+	ExtendedServerOptions struct {
+		ListenNetwork string
+		ListenAddress string
+	}
+
+	InExtendedServerOptions struct {
+		fx.In
+		Options []ExtendedServerOption `group:"grpcExtendedServerOptions"`
+	}
+
+	OutExtendedServerOption struct {
+		fx.Out
+		Option ExtendedServerOption `group:"grpcExtendedServerOptions"`
+	}
+
+	ExtendedServerOption func(extendedServerOptions *ExtendedServerOptions) (err error)
 )
 
 func ServerOption(o grpc.ServerOption) func() (out OutServerOption) {
@@ -48,9 +64,23 @@ func RegisterServer(s Server) func() (out OutServer) {
 	}
 }
 
-func NewServer(inServerOptions InServerOptions, inServers InServers, listenAddress ListenAddress, lc fx.Lifecycle) (server *grpc.Server, err error) {
-	server = grpc.NewServer(inServerOptions.Options...)
+func NewExtendedServerOptions(inExtendedServerOptions InExtendedServerOptions) (extendedServerOptions *ExtendedServerOptions) {
+	extendedServerOptions = &ExtendedServerOptions{
+		ListenNetwork: "tcp",
+		ListenAddress: ":8090",
+	}
+	// 扩展选项
+	for _, o := range inExtendedServerOptions.Options {
+		if err = o(extendedServerOptions); err != nil {
+			return
+		}
+	}
 
+	return
+}
+
+func NewServer(inServerOptions InServerOptions, inServers InServers, extendedServerOptions *ExtendedServerOptions, lc fx.Lifecycle) (server *grpc.Server, err error) {
+	server = grpc.NewServer(inServerOptions.Options...)
 	// 注册服务
 	for _, s := range inServers.Servers {
 		if err = s(server); err != nil {
@@ -62,7 +92,7 @@ func NewServer(inServerOptions InServerOptions, inServers InServers, listenAddre
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) (err error) {
 			var lis net.Listener
-			if lis, err = net.Listen("tcp", string(listenAddress)); err != nil {
+			if lis, err = net.Listen(extendedServerOptions.ListenNetwork, extendedServerOptions.ListenAddress); err != nil {
 				return
 			}
 			go server.Serve(lis)
