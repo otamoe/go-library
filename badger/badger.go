@@ -1,11 +1,10 @@
 package libbadger
 
 import (
-	"github.com/dgraph-io/badger/v3"
 	"go.uber.org/fx"
 )
 
-func New(options badger.Options) fx.Option {
+func New() fx.Option {
 	return fx.Options(
 		fx.Provide(NewOptions),
 		fx.Provide(NewExtendedOption),
