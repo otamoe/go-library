@@ -14,7 +14,7 @@ func ViperLoggerLevel() (out OutOption) {
 		} else {
 			liblogger.SetLevel("badger", zap.InfoLevel)
 		}
-		return out
+		return out, nil
 	}
 	return
 }
