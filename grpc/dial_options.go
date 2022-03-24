@@ -25,6 +25,10 @@ type (
 		fx.In
 		Options []ExtendedDialOption `group:"grpcExtendedDialOptions"`
 	}
+	OutExtendedDialOption struct {
+		fx.Out
+		Option ExtendedDialOption `group:"grpcExtendedDialOptions"`
+	}
 
 	ExtendedDialOption func(extendedDialOptions *ExtendedDialOptions) (err error)
 
