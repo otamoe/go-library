@@ -75,7 +75,6 @@ func NewExtendedServerOptions(inExtendedServerOptions InExtendedServerOptions) (
 			return
 		}
 	}
-
 	return
 }
 
@@ -116,6 +115,5 @@ func NewServer(inServerOptions InServerOptions, inServers InServers, extendedSer
 			return
 		},
 	})
-
 	return
 }

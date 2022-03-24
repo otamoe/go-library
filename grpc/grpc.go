@@ -20,3 +20,11 @@ func New() fx.Option {
 		fx.Provide(NewExtendedServerOptions),
 	)
 }
+
+func NewClient() fx.Option {
+	return fx.Options(
+		fx.Provide(DialOption(grpc.WithMaxHeaderListSize(1024*4))),
+		fx.Provide(NewClientConn),
+		fx.Provide(NewExtendedDialOptions),
+	)
+}
