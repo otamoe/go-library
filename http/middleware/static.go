@@ -40,10 +40,11 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 		}
 
 		var err error
-		func() {
+		defer func() {
 			if err == nil {
 				return
 			}
+
 			// 文件没找到 跳到下一个
 			if os.IsNotExist(err) {
 				next.ServeHTTP(w, r)
@@ -66,10 +67,12 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 			if static.Redirect != "" && os.IsNotExist(err) {
 				f, err = static.FS.Open(path.Join(static.FSPath, static.Redirect))
 			}
+
 			// 错误
 			if err != nil {
 				return
 			}
+
 		}
 		// 关闭
 		defer f.Close()
@@ -94,6 +97,7 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 				return
 			}
 			f.Close()
+
 			if f, err = static.FS.Open(path.Join(static.FSPath, upath, "/index.html")); err != nil {
 				return
 			}
