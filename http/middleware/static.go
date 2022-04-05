@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"io/fs"
 	"net/http"
 	"os"
 	"path"
@@ -14,7 +13,7 @@ type (
 	Static struct {
 		MaxAge   int
 		Prefix   string
-		FS       fs.FS
+		FS       http.FileSystem
 		FSPath   string
 		ModTime  time.Time
 		Redirect string
@@ -23,7 +22,6 @@ type (
 )
 
 func (static *Static) Handler(next http.Handler) http.Handler {
-	httpFS := http.FS(static.FS)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		upath := r.URL.Path
 		if !strings.HasPrefix(upath, "/") {
@@ -40,11 +38,11 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 			upath = "/" + upath
 		}
 
-		f, err := httpFS.Open(path.Join(static.FSPath, upath))
+		f, err := static.FS.Open(path.Join(static.FSPath, upath))
 
 		// 重定向链接
 		if err != nil && static.Redirect != "" && os.IsNotExist(err) {
-			f, err = httpFS.Open(path.Join(static.FSPath, static.Redirect))
+			f, err = static.FS.Open(path.Join(static.FSPath, static.Redirect))
 		}
 
 		if err != nil {
@@ -98,7 +96,7 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 				return
 			}
 			f.Close()
-			f, err = httpFS.Open(path.Join(static.FSPath, upath, "/index.html"))
+			f, err = static.FS.Open(path.Join(static.FSPath, upath, "/index.html"))
 			if err != nil {
 				// 文件没找到 或 权限不正确
 				if os.IsNotExist(err) || os.IsPermission(err) {
