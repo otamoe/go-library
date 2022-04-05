@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"io/fs"
 	"net/http"
 	"os"
 	"path"
@@ -27,8 +28,8 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 		if !strings.HasPrefix(upath, "/") {
 			upath = "/" + upath
 		}
+		// 没匹配到 下一个
 		if static.Prefix != "" && !strings.HasPrefix(upath, static.Prefix) {
-			// 没匹配到
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -38,14 +39,11 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 			upath = "/" + upath
 		}
 
-		f, err := static.FS.Open(path.Join(static.FSPath, upath))
-
-		// 重定向链接
-		if err != nil && static.Redirect != "" && os.IsNotExist(err) {
-			f, err = static.FS.Open(path.Join(static.FSPath, static.Redirect))
-		}
-
-		if err != nil {
+		var err error
+		func() {
+			if err == nil {
+				return
+			}
 			// 文件没找到 跳到下一个
 			if os.IsNotExist(err) {
 				next.ServeHTTP(w, r)
@@ -60,29 +58,29 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 
 			// 其他错误
 			http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
-			return
+		}()
+
+		var f http.File
+		if f, err = static.FS.Open(path.Join(static.FSPath, upath)); err != nil {
+			// 读取 重定向链接
+			if static.Redirect != "" && os.IsNotExist(err) {
+				f, err = static.FS.Open(path.Join(static.FSPath, static.Redirect))
+			}
+			// 错误
+			if err != nil {
+				return
+			}
 		}
+		// 关闭
 		defer f.Close()
 
-		d, err := f.Stat()
-		if err != nil {
-			// 文件没找到 跳到下一个
-			if os.IsNotExist(err) {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			// 权限不正确
-			if os.IsPermission(err) {
-				http.Error(w, "403 Forbidden", http.StatusForbidden)
-				return
-			}
-
-			// 其他错误
-			http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
+		// stat
+		var d fs.FileInfo
+		if d, err = f.Stat(); err != nil {
 			return
 		}
 
+		// 关闭启用日志
 		LoggerEnable(r.Context(), static.Logger)
 
 		if d.IsDir() {
@@ -96,38 +94,18 @@ func (static *Static) Handler(next http.Handler) http.Handler {
 				return
 			}
 			f.Close()
-			f, err = static.FS.Open(path.Join(static.FSPath, upath, "/index.html"))
-			if err != nil {
-				// 文件没找到 或 权限不正确
-				if os.IsNotExist(err) || os.IsPermission(err) {
-					http.Error(w, "403 Forbidden", http.StatusForbidden)
-					return
-				}
-
-				// 其他错误
-				http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
+			if f, err = static.FS.Open(path.Join(static.FSPath, upath, "/index.html")); err != nil {
 				return
 			}
 			defer f.Close()
-			d, err = f.Stat()
-			if err != nil {
-				// 文件没找到 或 权限不正确
-				if os.IsNotExist(err) || os.IsPermission(err) {
-					http.Error(w, "403 Forbidden", http.StatusForbidden)
-					return
-				}
-
-				// 其他错误
-				http.Error(w, "500 Internal Server Error", http.StatusInternalServerError)
+			if d, err = f.Stat(); err != nil {
 				return
 			}
 
 			// 还是目录
 			if d.IsDir() {
-				if os.IsNotExist(err) || os.IsPermission(err) {
-					http.Error(w, "403 Forbidden", http.StatusForbidden)
-					return
-				}
+				http.Error(w, "403 Forbidden", http.StatusForbidden)
+				return
 			}
 		} else {
 			if len(upath) > 2 && len(r.URL.Path) > 2 && r.URL.Path[0] == '/' && r.URL.Path[len(r.URL.Path)-1] == '/' {
