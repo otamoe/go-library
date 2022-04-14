@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"bufio"
 	"compress/gzip"
+	"errors"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -43,6 +46,14 @@ func (w *compressResponseWriter) WriteHeader(status int) {
 func (w *compressResponseWriter) Write(b []byte) (int, error) {
 	w.pre()
 	return w.Writer.Write(b)
+}
+
+func (w *compressResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	h, ok := w.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, errors.New("response does not implement http.Hijacker")
+	}
+	return h.Hijack()
 }
 
 //  预处理
