@@ -1,6 +1,8 @@
 package liblogger
 
 import (
+	"io"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -10,6 +12,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 var mux sync.Mutex
@@ -22,6 +25,9 @@ var loggers = make(map[string]*zap.Logger)
 
 // core 接口
 var core = &interfaceCore{}
+
+// writers
+var writers = &interfaceWriters{}
 
 //  regexLevel 匹配设置 的 level
 var regexLevels = make([]regexLevel, 0)
@@ -39,21 +45,30 @@ type (
 
 func init() {
 	libviper.SetDefault("logger.level", []string{}, "logger level")
+	libviper.SetDefault("logger.write.filename", "", "logger write path")
+	libviper.SetDefault("logger.write.maxSize", 4, "logger write max size  mb")
+	libviper.SetDefault("logger.write.maxBackups", 32, "logger write max backups")
+	libviper.SetDefault("logger.write.maxAge", false, "logger write max max age")
+	libviper.SetDefault("logger.write.compress", false, "logger write max compress")
 
+	// 配置信息
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	cfg.Level = zap.NewAtomicLevelAt(zapcore.Level(zap.DebugLevel))
+	enc := zapcore.NewJSONEncoder(cfg.EncoderConfig)
 
+	writers.writers = append(writers.writers, os.Stderr)
+	level := zap.NewAtomicLevelAt(zapcore.Level(zap.DebugLevel))
+	core.Core = zapcore.NewCore(enc, writers, level)
 	logger, err := cfg.Build()
 	if err != nil {
 		panic(err)
 	}
-	core.Core = logger.Core()
+
 	logger = logger.WithOptions(zap.WrapCore(func(c zapcore.Core) zapcore.Core {
 		return core
 	}))
 	loggers[""] = logger
-	levels[""] = cfg.Level
+	levels[""] = level
 }
 
 func New() fx.Option {
@@ -127,6 +142,24 @@ func Core() (c zapcore.Core) {
 	return core.Core
 }
 
+func AddWriter(w ...io.Writer) {
+	writers.writers = append(writers.writers, w...)
+}
+
+func SetWriter(w ...io.Writer) {
+	writers.Sync()
+	writers.Close()
+	writers.writers = w
+}
+
+func WriterSync() (err error) {
+	return writers.Sync()
+}
+
+func WriterClose() (err error) {
+	return writers.Sync()
+}
+
 func Viper() {
 	if viper.GetString("env") == "development" {
 		SetLevelRegex("*", zapcore.DebugLevel)
@@ -145,4 +178,16 @@ func Viper() {
 			SetLevelRegex(s[0:i], l)
 		}
 	}
+
+	if filename := viper.GetString("logger.write.filename"); filename != "" {
+		w := &lumberjack.Logger{
+			Filename:   filename,
+			MaxSize:    viper.GetInt("logger.write.maxSize"),
+			MaxBackups: viper.GetInt("logger.write.maxBackups"),
+			Compress:   viper.GetBool("logger.write.compress"),
+			MaxAge:     viper.GetInt("logger.write.maxAge"),
+		}
+		AddWriter(w)
+	}
+
 }
