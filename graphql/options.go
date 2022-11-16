@@ -3,7 +3,6 @@ package libgraphql
 import (
 	"compress/gzip"
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"net/http"
@@ -121,10 +120,7 @@ func LoggerDisable() (out OutOption) {
 	return
 }
 
-//go:embed public
-var staticFS embed.FS
-
-func Static() (out OutOption) {
+func Static(staticFS http.FileSystem) (out OutOption) {
 	// static 中间件
 	static := &libhttpMiddleware.Static{
 		FSPath:  "public",
