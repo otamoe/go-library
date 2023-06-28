@@ -85,6 +85,7 @@ func (w *compressResponseWriter) pre() {
 		return
 	}
 
+	w.Header().Set("Accept-Encoding", w.encoding)
 	w.Header().Set("Content-Encoding", w.encoding)
 	w.Header().Del("Content-Length")
 
