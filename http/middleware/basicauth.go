@@ -6,6 +6,7 @@ import (
 
 type BasicAuth struct {
 	Auths    map[string]string
+	Header   bool
 	Verified func(r *http.Request) bool
 }
 
@@ -14,7 +15,9 @@ func (basicAuth *BasicAuth) Handler(next http.Handler) http.Handler {
 		var ok bool
 		defer func() {
 			if !ok {
-				w.Header().Set("WWW-Authenticate", `Basic realm="User login", charset="UTF-8"`)
+				if basicAuth.Header {
+					w.Header().Set("WWW-Authenticate", `Basic realm="Login", charset="UTF-8"`)
+				}
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
